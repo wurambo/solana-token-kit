@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "outDir": "build",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "target": "ES2022"
+  }
+}

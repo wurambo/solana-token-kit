@@ -1,0 +1,41 @@
+{
+  "scripts": {
+    "burnLP": "npx ts-node ./src/burnLPToken.ts",
+    "burnTokens": "npx ts-node ./src/burnTokens.ts",
+    "createToken": "npx ts-node ./src/createToken.ts",
+    "createMarket": "npx ts-node ./src/createMarket.ts",
+    "createPool": "npx ts-node ./src/createAndManageLP.ts",
+    "createCookWallets": "npx ts-node ./src/createCookWallets",
+    "createWallets": "npx ts-node ./src/createWallets",
+    "fakeSnipe": "npx ts-node ./src/fakeSnipe.ts",
+    "getTokenBalance": "npx ts-node ./src/getTokenBalance.ts",
+    "monitorWallets": "npx ts-node ./src/monitorWallets.ts",
+    "reconnect": "npx ts-node ./src/reconnectAndManageLP.ts",
+    "removeLP": "npx ts-node ./src/removeLiquidity.ts",
+    "sendSolanaFrom": "npx ts-node ./src/sendSolanaFrom.ts",
+    "sendSolanaTo": "npx ts-node ./src/sendSolanaToWallets.ts",
+    "sendTokens": "npx ts-node ./src/sendTokens.ts",
+    "volumeBot": "npx ts-node ./src/startVolumeBot.ts"
+  },
+  "dependencies": {
+    "@metaplex-foundation/mpl-token-metadata": "^2.5.2",
+    "@project-serum/serum": "^0.13.65",
+    "@raydium-io/raydium-sdk": "^1.3.1-beta.48",
+    "@solana/spl-token": "^0.4.0",
+    "@solana/web3.js": "^1.89.1",
+    "@types/bs58": "^4.0.4",
+    "bip39": "^3.1.0",
+    "bn.js": "^5.2.1",
+    "jito-ts": "^3.0.1",
+    "nft.storage": "^7.1.1",
+    "websocket": "^1.0.34",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.5",
+    "nodemon": "^3.0.3",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
+  }
+}
