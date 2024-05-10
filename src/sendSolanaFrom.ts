@@ -26,9 +26,9 @@ const sendSolanaFromCreatedWallets = async () => {
   // send token to batches of wallets
   for (let i = 0; i < wallets.length; i += WALLETS_PER_BUNDLE) {
     const walletsSlice = wallets.slice(i, i + WALLETS_PER_BUNDLE);
-    const walletsToSend = [];
+    const walletsToSend = [] as Wallet[];
     for (const wallet of walletsSlice) {
-      const balance = await connection.getBalance(wallet.keypair.publicKey);
+      const balance = await connection.getBalance(wallet.keypair!.publicKey);
       if (balance) {
         sum += balance;
         wallet.balance = balance;

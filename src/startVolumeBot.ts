@@ -8,6 +8,7 @@ import {
 } from "../config/config";
 import {
   Liquidity,
+  LiquidityPoolKeysV4,
   ONE,
   TOKEN_PROGRAM_ID,
   Token,
@@ -16,7 +17,12 @@ import {
   parseBigNumberish,
 } from "@raydium-io/raydium-sdk";
 import { getTokenBalanceWallets } from "./utils/wallet";
-import { Keypair, Signer } from "@solana/web3.js";
+import {
+  Keypair,
+  Signer,
+  Transaction,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { Wallets } from "./types/wallet";
 import { build_swap_instructions } from "./utils/build_a_sendtxn";
 import { getATAAddress, getWalletTokenAccount } from "./utils/get_balance";
@@ -47,7 +53,7 @@ export const startVolumeBot = async () => {
   );
 
   // figure out which wallets are buy wallets
-  const poolKeys = await getPoolKeys(market_id);
+  const poolKeys = (await getPoolKeys(market_id)) as LiquidityPoolKeysV4;
   const { baseDecimals, baseMint, quoteDecimals } = poolKeys;
   const poolInfo = await Liquidity.fetchInfo({ connection, poolKeys });
   const TOKEN_TYPE = new Token(
@@ -62,13 +68,13 @@ export const startVolumeBot = async () => {
   wallets = await getTokenBalanceWallets(poolInfo, poolKeys, wallets);
   const walletsList = Object.values(wallets);
 
-  const sellWallets = walletsList.filter((wallet) => wallet.swapWorth > 0);
+  const sellWallets = walletsList.filter((wallet) => wallet.swapWorth! > 0);
   const buyWallets = walletsList.filter((wallet) => !wallet.swapWorth);
 
   // start volume bot
   while (true) {
     try {
-      const swapTransactions = [];
+      const swapTransactions = [] as (VersionedTransaction | Transaction)[];
       let blockhash = (await connection.getLatestBlockhash("finalized"))
         .blockhash;
 
@@ -79,12 +85,12 @@ export const startVolumeBot = async () => {
         const pairedSellWallet = sellWallets[i];
         const tokenAccountRawInfos_Swap = await getWalletTokenAccount(
           connection,
-          wallet.keypair.publicKey
+          wallet.keypair!.publicKey
         );
 
         const inputTokenAmount = new TokenAmount(
           DEFAULT_TOKEN.WSOL,
-          pairedSellWallet.swapWorth * 10 ** quoteDecimals
+          pairedSellWallet.swapWorth! * 10 ** quoteDecimals
         );
 
         const swap_ix = await build_swap_instructions(
@@ -98,7 +104,7 @@ export const startVolumeBot = async () => {
         const swap_tx = await buildSimpleTransaction({
           connection,
           makeTxVersion,
-          payer: wallet.keypair.publicKey,
+          payer: wallet.keypair!.publicKey,
           innerTransactions: swap_ix,
           recentBlockhash: blockhash,
         });
@@ -113,7 +119,7 @@ export const startVolumeBot = async () => {
         console.log("Wallet sell: ", wallet.publicKey);
         const tokenAccountRawInfos_Swap = await getWalletTokenAccount(
           connection,
-          wallet.keypair.publicKey
+          wallet.keypair!.publicKey
         );
 
         const swapToken = new Token(
@@ -123,7 +129,7 @@ export const startVolumeBot = async () => {
         );
         const swapTokenAccount = getATAAddress(
           TOKEN_PROGRAM_ID,
-          wallet.keypair.publicKey,
+          wallet.keypair!.publicKey,
           poolKeys.baseMint
         );
         let swap_account_balance1 = await connection.getTokenAccountBalance(
@@ -150,7 +156,7 @@ export const startVolumeBot = async () => {
         const swap_tx = await buildSimpleTransaction({
           connection,
           makeTxVersion,
-          payer: wallet.keypair.publicKey,
+          payer: wallet.keypair!.publicKey,
           innerTransactions: swap_ix,
           recentBlockhash: blockhash,
           addLookupTableInfo: addLookupTableInfo,
@@ -167,12 +173,12 @@ export const startVolumeBot = async () => {
         const pairedSellWallet = sellWallets[i];
         const tokenAccountRawInfos_Swap = await getWalletTokenAccount(
           connection,
-          wallet.keypair.publicKey
+          wallet.keypair!.publicKey
         );
 
         const inputTokenAmount = new TokenAmount(
           DEFAULT_TOKEN.WSOL,
-          pairedSellWallet.swapWorth * 10 ** quoteDecimals
+          pairedSellWallet.swapWorth! * 10 ** quoteDecimals
         );
 
         const swap_ix = await build_swap_instructions(
@@ -186,7 +192,7 @@ export const startVolumeBot = async () => {
         const swap_tx = await buildSimpleTransaction({
           connection,
           makeTxVersion,
-          payer: wallet.keypair.publicKey,
+          payer: wallet.keypair!.publicKey,
           innerTransactions: swap_ix,
           recentBlockhash: blockhash,
         });
@@ -201,7 +207,7 @@ export const startVolumeBot = async () => {
         console.log("Wallet sell: ", wallet.publicKey);
         const tokenAccountRawInfos_Swap = await getWalletTokenAccount(
           connection,
-          wallet.keypair.publicKey
+          wallet.keypair!.publicKey
         );
 
         const swapToken = new Token(
@@ -211,7 +217,7 @@ export const startVolumeBot = async () => {
         );
         const swapTokenAccount = getATAAddress(
           TOKEN_PROGRAM_ID,
-          wallet.keypair.publicKey,
+          wallet.keypair!.publicKey,
           poolKeys.baseMint
         );
         let swap_account_balance1 = await connection.getTokenAccountBalance(
@@ -238,7 +244,7 @@ export const startVolumeBot = async () => {
         const swap_tx = await buildSimpleTransaction({
           connection,
           makeTxVersion,
-          payer: wallet.keypair.publicKey,
+          payer: wallet.keypair!.publicKey,
           innerTransactions: swap_ix,
           recentBlockhash: blockhash,
           addLookupTableInfo: addLookupTableInfo,
@@ -248,6 +254,7 @@ export const startVolumeBot = async () => {
         swapTransactions.push(swap_tx[0]);
       }
 
+      //@ts-ignore
       const status = await sendBundle(swapTransactions, JITO_TIPS);
 
       if (status == 1) {
@@ -255,10 +262,10 @@ export const startVolumeBot = async () => {
         const buyWallet1 = buyWallets.shift();
         const sellWallet0 = sellWallets.shift();
         const sellWallet1 = sellWallets.shift();
-        buyWallets.push(sellWallet0);
-        buyWallets.push(sellWallet1);
-        sellWallets.push(buyWallet0);
-        sellWallets.push(buyWallet1);
+        buyWallets.push(sellWallet0!);
+        buyWallets.push(sellWallet1!);
+        sellWallets.push(buyWallet0!);
+        sellWallets.push(buyWallet1!);
       } else {
         console.log("Bundle may not have processed. Trying again...");
       }

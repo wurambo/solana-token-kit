@@ -1,4 +1,9 @@
-import { PublicKey, Signer, VersionedTransaction } from "@solana/web3.js";
+import {
+  PublicKey,
+  Signer,
+  Transaction,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import {
   jsonInfo2PoolKeys,
   Liquidity,
@@ -62,7 +67,7 @@ async function txCreateAndInitNewPool() {
     bids: marketBids,
     asks: marketAsks,
     eventQueue: marketEventQueue,
-  } = MARKET_STATE_LAYOUT_V3.decode(marketBufferInfo.data);
+  } = MARKET_STATE_LAYOUT_V3.decode(marketBufferInfo?.data!);
   console.log("Base mint: ", baseMint.toString());
   console.log("Quote mint: ", quoteMint.toString());
 
@@ -214,12 +219,12 @@ async function txCreateAndInitNewPool() {
   // console.log("Swap wsol [Lamports]: ", inputTokenAmount.raw.words[0]);
   // console.log("Min Amount Out[Lamports]: ", minAmountOut.raw.words[0]);
   const swapWallets = Object.values(swapWalletsConfig);
-  const swapTransactions = [];
+  const swapTransactions = [] as (VersionedTransaction | Transaction)[];
   for (let i = 0; i < swapWallets.length; i += 1) {
     const wallet = swapWallets[i];
     const tokenAccountRawInfos_Swap = await getWalletTokenAccount(
       connection,
-      wallet.keypair.publicKey
+      wallet.keypair!.publicKey
     );
 
     const inputTokenAmount = new TokenAmount(
@@ -240,7 +245,7 @@ async function txCreateAndInitNewPool() {
     const swap_tx = await buildSimpleTransaction({
       connection,
       makeTxVersion,
-      payer: wallet.keypair.publicKey,
+      payer: wallet.keypair!.publicKey,
       innerTransactions: swap_ix,
       recentBlockhash: blockhash,
     });
@@ -261,6 +266,7 @@ async function txCreateAndInitNewPool() {
 
   let success;
   while (success !== 1) {
+    //@ts-ignore
     success = await sendBundle(transactions, create_pool_fees);
   }
 

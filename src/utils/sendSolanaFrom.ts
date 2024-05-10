@@ -16,18 +16,18 @@ export const sendSolanaFrom = async (
       const wallet = wallets[i];
 
       const transferSolIx = await SystemProgram.transfer({
-        fromPubkey: wallet.keypair.publicKey,
+        fromPubkey: wallet.keypair!.publicKey,
         toPubkey: receiver,
-        lamports: wallet.balance - 5000,
+        lamports: wallet.balance! - 5000,
       });
       sendSolanaTransaction.add(transferSolIx);
     }
 
     let blockhash = (await connection.getLatestBlockhash("finalized"))
       .blockhash;
-    sendSolanaTransaction.feePayer = wallets[0].keypair.publicKey;
+    sendSolanaTransaction.feePayer = wallets[0].keypair!.publicKey;
     sendSolanaTransaction.recentBlockhash = blockhash;
-    sendSolanaTransaction.sign(...wallets.map((wallet) => wallet.keypair));
+    sendSolanaTransaction.sign(...wallets.map((wallet) => wallet.keypair!));
 
     await sendBundle([sendSolanaTransaction], JITO_TIP_AMOUNT);
   } catch (error) {

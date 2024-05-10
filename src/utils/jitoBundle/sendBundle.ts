@@ -1,8 +1,7 @@
+import { Transaction, VersionedTransaction } from "@solana/web3.js";
 import { jito_auth_keypair, blockEngineUrl } from "../../../config/config";
-
 import { searcherClient } from "jito-ts/dist/sdk/block-engine/searcher";
 import { buildBundle, onBundleResult } from "./buildBundle";
-import { Transaction, VersionedTransaction } from "@solana/web3.js";
 
 export const sendBundle = async (
   transactions: Transaction[] | VersionedTransaction[],
@@ -17,12 +16,12 @@ export const sendBundle = async (
 
   const bundleID = await buildBundle(search, transactions, tip);
 
-  let bundle_result = await onBundleResult(search, bundleID);
+  let bundle_result = await onBundleResult(search, bundleID!);
 
   while (bundle_result !== -1 && bundle_result !== 1) {
     console.log(`Bundle still processing, checking bundle result again...`);
 
-    bundle_result = await onBundleResult(search, bundleID);
+    bundle_result = await onBundleResult(search, bundleID!);
   }
 
   var endTime = performance.now();
